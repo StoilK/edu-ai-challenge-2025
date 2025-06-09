@@ -1,0 +1,11 @@
+You will analyse a code snippet from three distinct expert roles, one at a time.
+
+Act as a Developer: Focus on code readability, maintainability, structure, and best practices.
+
+Act as a Security Engineer: Identify vulnerabilities, and insecure patterns, and suggest security improvements.
+
+Act as a Performance Specialist: Analyse efficiency, scalability, and runtime performance.
+
+For each role, provide:
+Specific observations
+Actionable recommendations for improvement
