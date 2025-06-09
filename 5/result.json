@@ -1,0 +1,61 @@
+{
+    "results": [
+        {
+            "sentiment": "Negative",
+            "isRelevant": true,
+            "mainSubject": "Sensor performance and connectivity reliability",
+            "positives": [],
+            "painPoints": [
+                "Sensor intermittently stops tracking",
+                "Issue persists even when plugged in",
+                "Dongle was non-functional in original unit",
+                "Price does not match performance issues"
+            ],
+            "improvementSuggestions": [
+                "Improve sensor reliability at high polling rates",
+                "Ensure dongle quality control",
+                "Enhance wired mode stability"
+            ],
+            "featuresMentioned": [
+                "Sensor",
+                "Polling rate (8000Hz)",
+                "Wireless dongle"
+            ],
+            "userExpertise": "Experienced"
+        },
+        {
+            "sentiment": "Mixed",
+            "isRelevant": true,
+            "mainSubject": "Product value and pricing",
+            "positives": [
+                "Product has no flaws",
+                "Satisfying experience if user is enthusiastic about it"
+            ],
+            "painPoints": [
+                "High price not justified by performance gains",
+                "Similar performance available in cheaper alternatives"
+            ],
+            "improvementSuggestions": [
+                "Adjust pricing to better match performance",
+                "Improve value proposition relative to specs"
+            ],
+            "featuresMentioned": [
+                "Product quality",
+                "Price",
+                "Performance",
+                "Specs"
+            ],
+            "userExpertise": "Experienced"
+        },
+        {
+            "sentiment": "",
+            "isRelevant": false,
+            "mainSubject": null,
+            "positives": [],
+            "painPoints": [],
+            "improvementSuggestions": [],
+            "featuresMentioned": [],
+            "userExpertise": "Unknown"
+        }
+    ]
+}
