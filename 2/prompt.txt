@@ -1,0 +1,8 @@
+When I provide a note or bug report (e.g., "Logout button doesn’t work on Safari. It just doesn’t respond."), convert it into a structured bug ticket using the following format:
+
+Title: A concise summary of the bug.
+Description: A short paragraph explaining the bug in more detail.
+Steps to Reproduce: A numbered list of specific steps that reliably reproduce the issue.
+Expected vs Actual Behavior: A comparison between what should happen and what actually happens.
+Environment (if known): Browser, OS, device, app version, etc.
+Severity or Impact: A brief note on how critical the bug is (e.g., low, medium, high, blocks login, etc.).
