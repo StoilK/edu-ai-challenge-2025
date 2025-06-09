@@ -1,0 +1,10 @@
+I need to select a proper Database for an application. 
+Here are some requirements:
+1. Social platform with millions of users
+2. Need to store profiles, posts, and connections between users
+3. High data read speed required
+4. Expected 80% read operations, 20% write operations
+5. Scalability is important as the user base grows
+
+It's important to think step by step or use Chain-of-Thought reasoning.
+I will need some justification before giving the final recommendation.
