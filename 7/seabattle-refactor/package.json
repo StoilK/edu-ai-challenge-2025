@@ -1,0 +1,23 @@
+{
+  "name": "seabattle-refactor",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "cross-env NODE_OPTIONS=\"--experimental-vm-modules\" npx jest",
+    "test:coverage": "cross-env NODE_OPTIONS=\"--experimental-vm-modules\" npx jest --coverage"
+  },
+  "keywords": [
+    "battleship",
+    "seabattle",
+    "game"
+  ],
+  "author": "",
+  "license": "ISC",
+  "description": "A modernized and refactored version of the SeaBattle game",
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "jest": "^29.7.0"
+  }
+}
