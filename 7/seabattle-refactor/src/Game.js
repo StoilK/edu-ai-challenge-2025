@@ -61,10 +61,10 @@ export default class Game {
     }
 
     let message;
-    if (result.hit) {
-      message = '🔥 PLAYER HIT! 🔥';
+          if (result.hit) {
+      message = '🔥 PLAYER HIT! 🔥 Keep firing at the same ship to sink it!';
       if (result.sunk) {
-        message += ' 💥 You sunk an enemy battleship! 💥';
+        message += '\n💥 BOOM! You sunk an enemy battleship! All 3 cells were hit! 💥';
       }
     } else {
       message = '💨 PLAYER MISS 💨';
@@ -161,8 +161,9 @@ export default class Game {
    * Print both boards side by side
    */
   printBoards() {
-    console.log('\n   🎯 OPPONENT BOARD 🎯                    🚢 YOUR BOARD 🚢');
-    console.log('  Legend: 🌊=Water 🔥=Hit 💨=Miss 🚢=Your Ships');
+    console.log('\n         🎯 OPPONENT BOARD 🎯                    🚢 YOUR BOARD 🚢');
+    console.log('\n              Legend: 🌊=Water 🔥=Hit (1 cell) 💨=Miss 🚢=Ship (3 cells)');
+    console.log('              Hint: You must hit all 3 cells of a ship to sink it!\n');
     
     // Print column numbers header with proper spacing for emojis
     let leftHeader = '   '; // Start with 3 spaces to align with row numbers

@@ -1,0 +1,43 @@
+{
+  "name": "typescript-validation-library",
+  "version": "1.0.0",
+  "description": "A robust, type-safe validation library for complex data structures",
+  "main": "dist/validation.js",
+  "types": "dist/validation.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc && node dist/test.js",
+    "examples": "tsc && node dist/examples.js",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "validation",
+    "typescript",
+    "schema",
+    "type-safe",
+    "validator",
+    "data-validation"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist/**/*",
+    "src/**/*",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/typescript-validation-library.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/typescript-validation-library/issues"
+  },
+  "homepage": "https://github.com/yourusername/typescript-validation-library#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+} 
