@@ -3,6 +3,45 @@ import os
 from openai import OpenAI
 from dotenv import load_dotenv
 
+def post_process_ai_response(function_args, user_query):
+    """
+    Post-process the AI response to ensure it includes necessary parameters
+    that the AI might have missed.
+    """
+    print("🚀 POST-PROCESSING FUNCTION CALLED!")
+    query_lower = user_query.lower()
+    print(f"🔍 Post-processing query: '{user_query}'")
+    print(f"🔍 Original args: {function_args}")
+    
+    # Check for cheapest/most affordable queries
+    if any(word in query_lower for word in ['cheapest', 'most affordable', 'lowest price']):
+        print("💰 Detected cheapest query - adding sorting and limiting")
+        if 'sort_by' not in function_args:
+            function_args['sort_by'] = 'price'
+            print("✅ Added sort_by: price")
+        if 'sort_order' not in function_args:
+            function_args['sort_order'] = 'asc'
+            print("✅ Added sort_order: asc")
+        if 'limit' not in function_args and ('the ' in query_lower or 'product' in query_lower):
+            function_args['limit'] = 1
+            print("✅ Added limit: 1")
+    
+    # Check for best rated queries
+    if any(word in query_lower for word in ['best rated', 'top rated', 'highest rated']):
+        print("⭐ Detected best rated query - adding rating sorting")
+        if 'sort_by' not in function_args:
+            function_args['sort_by'] = 'rating'
+        if 'sort_order' not in function_args:
+            function_args['sort_order'] = 'desc'
+    
+    # Only use in_stock_only if explicitly requested
+    if 'in_stock_only' in function_args and not any(word in query_lower for word in ['in stock', 'available', 'stock']):
+        print("🚫 Removing in_stock_only - not explicitly requested")
+        del function_args['in_stock_only']
+    
+    print(f"🔍 Final args: {function_args}")
+    return function_args
+
 def get_products_from_query(query, products):
     """
     Uses OpenAI function calling to determine filtering arguments from a natural language query
@@ -14,7 +53,7 @@ def get_products_from_query(query, products):
     functions = [
         {
             "name": "filter_products",
-            "description": "Filters a list of products based on specified criteria.",
+            "description": "Filters a list of products based on specified criteria. CRITICAL: When user asks for 'the cheapest' or 'cheapest product' (singular), you MUST use 'limit': 1. ONLY use 'in_stock_only': true when user explicitly asks for 'in stock' or 'available' items. Examples: For 'cheapest fitness product' use {'category': ['Fitness'], 'sort_by': 'price', 'sort_order': 'asc', 'limit': 1}. For 'best rated electronics' use {'category': ['Electronics'], 'sort_by': 'rating', 'sort_order': 'desc'}.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -34,6 +73,21 @@ def get_products_from_query(query, products):
                     "in_stock_only": {
                         "type": "boolean",
                         "description": "Whether to only include products that are in stock."
+                    },
+                    "sort_by": {
+                        "type": "string",
+                        "enum": ["price", "rating", "name"],
+                        "description": "Field to sort the products by."
+                    },
+                    "sort_order": {
+                        "type": "string",
+                        "enum": ["asc", "desc"],
+                        "description": "Order to sort the products in (ascending or descending).",
+                        "default": "asc"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Limit the number of results."
                     }
                 },
                 "required": []
@@ -44,7 +98,8 @@ def get_products_from_query(query, products):
     # The user's query and the entire product list are sent to the model.
     # The model uses the product list as context to make a better filtering decision.
     messages = [
-        {"role": "system", "content": "You are a helpful assistant that filters a product list based on user queries. Use the provided `filter_products` function. The product list is available for your reference to make an informed decision."},
+        {"role": "system",
+         "content": "You are an expert assistant that filters products. Use the `filter_products` function. CRITICAL: When user asks for 'the cheapest' or 'the most affordable' (singular), you MUST include 'limit': 1. When user asks for 'cheapest' or 'most affordable' (plural), you MUST include 'limit': 1. For 'best rated' or 'top rated', use 'sort_by': 'rating', 'sort_order': 'desc'. ONLY use 'in_stock_only': true when user explicitly asks for 'in stock' or 'available' items. Always use the exact parameter names: sort_by, sort_order, limit."},
         {"role": "user", "content": f"User query: '{query}'\n\nProduct data: {json.dumps(products)}"}
     ]
 
@@ -59,8 +114,12 @@ def get_products_from_query(query, products):
     
     # Check if the model wants to call a function
     if response_message.function_call:
-        function_args = json.loads(response_message.function_call.arguments)
-        print("\n🔍 AI is filtering with these arguments:", function_args)
+        original_args = json.loads(response_message.function_call.arguments)
+        print("\n🔍 AI is filtering with these arguments:", original_args)
+        function_args = post_process_ai_response(original_args.copy(), query)
+        if function_args != original_args:
+            print("🔧 Post-processed arguments:", function_args)
+        print(f"✅ Arguments used for filtering: {function_args}")
         return apply_filters(products, function_args)
     else:
         print("\n🤔 AI did not specify any filters. Returning all products.")
@@ -95,6 +154,17 @@ def apply_filters(products, args):
             p for p in filtered_products if p["in_stock"]
         ]
         
+    # Sorting
+    sort_by = args.get("sort_by")
+    if sort_by:
+        reverse = args.get("sort_order") == "desc"
+        filtered_products.sort(key=lambda p: p[sort_by], reverse=reverse)
+
+    # Limiting
+    limit = args.get("limit")
+    if limit:
+        filtered_products = filtered_products[:limit]
+
     return filtered_products
 
 def display_products(products):
