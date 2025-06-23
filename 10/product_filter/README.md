@@ -1,11 +1,11 @@
 # AI-Powered Product Filtering Tool
 
-This console application uses OpenAI's function calling capability to perform natural language filtering on a product dataset. The tool interprets user queries like "Show me fitness products under $100 with at least 4 stars" and returns a filtered list of products.
+This console application uses OpenAI's function calling capability to perform natural language filtering on a product dataset. The tool interprets user queries like "Show me fitness products under $100 with at least 4 stars" and returns a filtered list of products, with the filtering logic being handled by the AI.
 
 ## Features
 
 -   **Natural Language Queries:** Filter products using everyday language.
--   **AI-Powered Filtering:** Leverages OpenAI's function calling to translate queries into structured filter arguments.
+-   **AI-Powered Filtering:** Leverages OpenAI's function calling to have the AI itself perform the filtering based on the user's query and return a precise list of matching products.
 -   **Extensible:** The filter function schema can be easily modified to include more parameters.
 -   **Secure:** Your OpenAI API key is loaded from a `.env` file and is not hardcoded.
 

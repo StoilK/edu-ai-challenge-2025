@@ -3,103 +3,62 @@ import os
 from openai import OpenAI
 from dotenv import load_dotenv
 
-def post_process_ai_response(function_args, user_query):
-    """
-    Post-process the AI response to ensure it includes necessary parameters
-    that the AI might have missed.
-    """
-    print("🚀 POST-PROCESSING FUNCTION CALLED!")
-    query_lower = user_query.lower()
-    print(f"🔍 Post-processing query: '{user_query}'")
-    print(f"🔍 Original args: {function_args}")
-    
-    # Check for cheapest/most affordable queries
-    if any(word in query_lower for word in ['cheapest', 'most affordable', 'lowest price']):
-        print("💰 Detected cheapest query - adding sorting and limiting")
-        if 'sort_by' not in function_args:
-            function_args['sort_by'] = 'price'
-            print("✅ Added sort_by: price")
-        if 'sort_order' not in function_args:
-            function_args['sort_order'] = 'asc'
-            print("✅ Added sort_order: asc")
-        if 'limit' not in function_args and ('the ' in query_lower or 'product' in query_lower):
-            function_args['limit'] = 1
-            print("✅ Added limit: 1")
-    
-    # Check for best rated queries
-    if any(word in query_lower for word in ['best rated', 'top rated', 'highest rated']):
-        print("⭐ Detected best rated query - adding rating sorting")
-        if 'sort_by' not in function_args:
-            function_args['sort_by'] = 'rating'
-        if 'sort_order' not in function_args:
-            function_args['sort_order'] = 'desc'
-    
-    # Only use in_stock_only if explicitly requested
-    if 'in_stock_only' in function_args and not any(word in query_lower for word in ['in stock', 'available', 'stock']):
-        print("🚫 Removing in_stock_only - not explicitly requested")
-        del function_args['in_stock_only']
-    
-    print(f"🔍 Final args: {function_args}")
-    return function_args
-
 def get_products_from_query(query, products):
     """
-    Uses OpenAI function calling to determine filtering arguments from a natural language query
-    and then applies them to a product list.
+    Uses OpenAI function calling to perform a natural language search on a product list
+    and return the filtered list of products.
     """
     load_dotenv()
     client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
+    # The 'products' parameter in the function definition is a placeholder.
+    # The actual product data is sent in the user message. The AI is instructed
+    # to use the data from the message and pass the filtered results
+    # into the 'products' parameter of the 'filter_products' function.
     functions = [
         {
             "name": "filter_products",
-            "description": "Filters a list of products based on specified criteria. CRITICAL: When user asks for 'the cheapest' or 'cheapest product' (singular), you MUST use 'limit': 1. ONLY use 'in_stock_only': true when user explicitly asks for 'in stock' or 'available' items. Examples: For 'cheapest fitness product' use {'category': ['Fitness'], 'sort_by': 'price', 'sort_order': 'asc', 'limit': 1}. For 'best rated electronics' use {'category': ['Electronics'], 'sort_by': 'rating', 'sort_order': 'desc'}.",
+            "description": "Based on the user query and the provided product data, return the filtered list of products.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "category": {
+                    "products": {
                         "type": "array",
-                        "items": {"type": "string"},
-                        "description": "The list of categories to filter by (e.g., ['Fitness', 'Electronics'])."
-                    },
-                    "max_price": {
-                        "type": "number",
-                        "description": "The maximum price of the products."
-                    },
-                    "min_rating": {
-                        "type": "number",
-                        "description": "The minimum rating of the products (from 1 to 5)."
-                    },
-                    "in_stock_only": {
-                        "type": "boolean",
-                        "description": "Whether to only include products that are in stock."
-                    },
-                    "sort_by": {
-                        "type": "string",
-                        "enum": ["price", "rating", "name"],
-                        "description": "Field to sort the products by."
-                    },
-                    "sort_order": {
-                        "type": "string",
-                        "enum": ["asc", "desc"],
-                        "description": "Order to sort the products in (ascending or descending).",
-                        "default": "asc"
-                    },
-                    "limit": {
-                        "type": "integer",
-                        "description": "Limit the number of results."
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {"type": "number"},
+                                "name": {"type": "string"},
+                                "category": {"type": "string"},
+                                "price": {"type": "number"},
+                                "rating": {"type": "number"},
+                                "in_stock": {"type": "boolean"}
+                            },
+                            "required": ["id", "name", "category", "price", "rating", "in_stock"]
+                        },
+                        "description": "The filtered list of products that match the user's query."
                     }
                 },
-                "required": []
+                "required": ["products"]
             }
         }
     ]
 
-    # The user's query and the entire product list are sent to the model.
-    # The model uses the product list as context to make a better filtering decision.
     messages = [
         {"role": "system",
-         "content": "You are an expert assistant that filters products. Use the `filter_products` function. CRITICAL: When user asks for 'the cheapest' or 'the most affordable' (singular), you MUST include 'limit': 1. When user asks for 'cheapest' or 'most affordable' (plural), you MUST include 'limit': 1. For 'best rated' or 'top rated', use 'sort_by': 'rating', 'sort_order': 'desc'. ONLY use 'in_stock_only': true when user explicitly asks for 'in stock' or 'available' items. Always use the exact parameter names: sort_by, sort_order, limit."},
+         "content": """You are an expert product filtering assistant. Analyze the user's query and the provided product data. 
+         Your task is to return a JSON array of products that strictly match all the criteria in the user's query. 
+         Use the `filter_products` function to return the results.
+         
+         Filtering Guide:
+         - "top N": If the user asks for "top 5", "top 10", etc., you must sort the results by rating in descending order and return only the specified number of products.
+         - "cheapest" / "most affordable": Sort the products by price in ascending order.
+         - "highest rated" / "best": Sort the products by rating in descending order.
+         - Multiple criteria: You must apply all criteria. For example, "top 10 cheapest in-stock electronics" means you must filter for electronics, check for stock, sort by price, and return only the first 10.
+         - Implicit criteria: A query like "I want a great phone" implies a high rating.
+         
+         Example: For a query "top 3 cheapest kitchen items in stock", you would first filter for `category: 'Kitchen'` and `in_stock: true`, then sort by `price` ascending, and finally return the top 3 results.
+         """},
         {"role": "user", "content": f"User query: '{query}'\n\nProduct data: {json.dumps(products)}"}
     ]
 
@@ -107,65 +66,24 @@ def get_products_from_query(query, products):
         model="gpt-4.1-mini",
         messages=messages,
         functions=functions,
-        function_call="auto"
+        function_call={"name": "filter_products"} # Force the model to call this function
     )
 
     response_message = response.choices[0].message
     
-    # Check if the model wants to call a function
     if response_message.function_call:
-        original_args = json.loads(response_message.function_call.arguments)
-        print("\n🔍 AI is filtering with these arguments:", original_args)
-        function_args = post_process_ai_response(original_args.copy(), query)
-        if function_args != original_args:
-            print("🔧 Post-processed arguments:", function_args)
-        print(f"✅ Arguments used for filtering: {function_args}")
-        return apply_filters(products, function_args)
-    else:
-        print("\n🤔 AI did not specify any filters. Returning all products.")
-        return products
-
-
-def apply_filters(products, args):
-    """
-    Applies filtering to the product list based on the arguments
-    provided by the OpenAI model.
-    """
-    filtered_products = products
-
-    if args.get("category"):
-        categories = [cat.lower() for cat in args["category"]]
-        filtered_products = [
-            p for p in filtered_products if p["category"].lower() in categories
-        ]
-
-    if args.get("max_price") is not None:
-        filtered_products = [
-            p for p in filtered_products if p["price"] <= args["max_price"]
-        ]
-
-    if args.get("min_rating") is not None:
-        filtered_products = [
-            p for p in filtered_products if p["rating"] >= args["min_rating"]
-        ]
-
-    if args.get("in_stock_only"):
-        filtered_products = [
-            p for p in filtered_products if p["in_stock"]
-        ]
+        function_args = json.loads(response_message.function_call.arguments)
+        filtered_products = function_args.get("products")
         
-    # Sorting
-    sort_by = args.get("sort_by")
-    if sort_by:
-        reverse = args.get("sort_order") == "desc"
-        filtered_products.sort(key=lambda p: p[sort_by], reverse=reverse)
-
-    # Limiting
-    limit = args.get("limit")
-    if limit:
-        filtered_products = filtered_products[:limit]
-
-    return filtered_products
+        if filtered_products is not None:
+            print(f"\n✅ AI has filtered the products based on your query.")
+            return filtered_products
+        else:
+            print("\n🤔 AI did not return any products. Returning an empty list.")
+            return []
+    else:
+        print("\n🤔 AI did not call the function as expected. Returning an empty list.")
+        return []
 
 def display_products(products):
     """Formats and prints the list of filtered products."""
@@ -174,14 +92,18 @@ def display_products(products):
         return
         
     print("\nFiltered Products:")
-    for product in products:
+    # Adding enumeration to the output
+    for i, product in enumerate(products, 1):
         stock_status = "In Stock" if product["in_stock"] else "Out of Stock"
-        print(f"{product['name']} - ${product['price']:.2f}, Rating: {product['rating']}, {stock_status}")
+        print(f"{i}. {product['name']} - ${product['price']:.2f}, Rating: {product['rating']}, {stock_status}")
 
 def main():
     """Main function to run the console application."""
     try:
-        with open("products.json", "r") as f:
+        # Construct the path to products.json relative to the script's location
+        script_dir = os.path.dirname(__file__)
+        file_path = os.path.join(script_dir, "products.json")
+        with open(file_path, "r") as f:
             products = json.load(f)
     except FileNotFoundError:
         print("Error: `products.json` not found. Please make sure the file exists in the same directory.")

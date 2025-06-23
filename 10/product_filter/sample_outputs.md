@@ -1,40 +1,40 @@
-# Sample Outputs
+# Sample Runs
 
-This file contains sample interactions with the AI Product Filter tool.
+This document shows a couple of sample interactions with the AI Product Filter application.
+
+## Sample 1: In-stock kitchen items under $50
+
+### User Input
+```
+> Show me kitchen items that are in stock and under $50
+```
+
+### Application Output
+```
+✅ AI has filtered the products based on your query.
+
+Filtered Products:
+1. Blender - $49.99, Rating: 4.2, In Stock
+2. Toaster - $29.99, Rating: 4.1, In Stock
+3. Electric Kettle - $39.99, Rating: 4.4, In Stock
+```
 
 ---
 
-## Sample 1: Fitness products under $100
+## Sample 2: Highly-rated books
 
-### User Request
+### User Input
+```
+> I need a book with a rating of at least 4.5
+```
 
+### Application Output
 ```
-> Show me fitness products under $100 that are in stock
-```
-
-### Console Output
-```
-🔍 AI is filtering with these arguments: {'category': ['Fitness'], 'max_price': 100, 'in_stock_only': True}
+✅ AI has filtered the products based on your query.
 
 Filtered Products:
-Smart Fitness Tracker - $89.99, Rating: 4.5, In Stock
-Stainless Steel Water Bottle - $22.00, Rating: 4.9, In Stock
-```
----
-
-## Sample 2: Highly-rated electronics
-
-### User Request
-
-```
-> what are the electronics with at least 4.5 stars rating?
-```
-
-### Console Output
-```
-🔍 AI is filtering with these arguments: {'category': ['Electronics'], 'min_rating': 4.5}
-
-Filtered Products:
-Wireless Bluetooth Headphones - $149.99, Rating: 4.8, In Stock
-```
---- 
+1. Programming Guide - $49.99, Rating: 4.7, In Stock
+2. Cookbook: Easy Recipes - $24.99, Rating: 4.5, In Stock
+3. History of Science - $39.99, Rating: 4.6, In Stock
+4. Children's Picture Book - $12.99, Rating: 4.5, In Stock
+``` 
