@@ -1,0 +1,18 @@
+{
+  "word_count": 85,
+  "speaking_speed_wpm": 140,
+  "frequently_mentioned_topics": [
+    {
+      "topic": "AI Integration",
+      "mentions": 5
+    },
+    {
+      "topic": "Q4 Roadmap",
+      "mentions": 4
+    },
+    {
+      "topic": "Customer Onboarding",
+      "mentions": 3
+    }
+  ]
+} 
